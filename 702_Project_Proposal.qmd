@@ -1,6 +1,6 @@
 ---
 title: "IDS 702 Project Proposal"
-author: "Team member names here"
+author: "Agastya Vinchhi, Steven Xu, Zhuotong Xie, Gulnar Gasimzada"
 format: pdf
 editor: visual
 execute:
@@ -11,59 +11,33 @@ execute:
 
 ## Project Proposal/Statistical Analysis Plan
 
-Link to your team's Github Repo:
+Link to your team's Github Repo: <https://github.com/agastyavinchhi/Statistics-Final-Project>
 
 ### Dataset Option 1
 
 ------------------------------------------------------------------------
 
-Project Title:
+Project Title: Confidence in Science: Evidence from the 2024 General Social Survey
 
-Data citation (use APA formatting or something similar):
+Data citation (use APA formatting or something similar): Davern, M., Bautista, R., Freese, J., Herd, P., & Morgan, S. L. (2025). *General Social Survey 2024* \[Data set\]. NORC at the University of Chicago. Sponsored by the National Science Foundation. <https://gss.norc.org>
 
-Original data collection date (when was the dataset published?):
+Original data collection date (when was the dataset published?): Data were collected in 2024 and released by NORC in 2025
 
-Data pull date (when did you download the data you will use?):
+Data pull date (when did you download the data you will use?): November 4, 2026
 
 ------------------------------------------------------------------------
-
-```{r}
-library(haven)
-library(dplyr)
-gss <- read_dta("GSS2024.dta")   # use the actual file name inside the zip
-```
-
-```{r}
-dim(gss)         
-head(gss)
-```
-
-```{r}
-library(haven)
-library(dplyr)
-
-vars <- c("consci", "degree", "partyid", "sex", "race", "region", "attend",   # categorical
-          "age", "realinc", "childs", "wrkstat", "maeduc", "tvhours")                                         # numeric
-
-gss_sub <- gss |>
-  select(any_of(vars)) |>
-  mutate(
-    across(c(consci, degree, partyid, sex, race, region, attend), as_factor),  # codes -> labels
-    across(c(age, realinc, childs), ~ as.numeric(zap_labels(.x)))              # keep as numbers
-  )
-```
-
-```{r}
-head(gss_sub, 10)  
-```
 
 #### 1 Research Question
 
 *Write the research question you are interested in investigating in your analysis. Consult [this helpful guide](https://writingcenter.gmu.edu/writing-resources/research-based-writing/how-to-write-a-research-question) for writing a good research question. Go beyond "is there a relationship between X and Y" to incorporate some statistical complexity, e.g., "is there a relationship between X and Y and does this relationship change over time?" You may also want to provide a second RQ as a backup and I can provide feedback on both options. Remember that you are required to use an inferential research question.*
 
+Among adults surveyed in the 2024 General Social Survey (GSC), is more education associated with greater confidence in the scientific community, and does the strength of this association differ by political party identification (interaction term), after adjusting for age, sex, race, region, family income, and religious service attendance?
+
 #### 2 Study Population
 
 Describe the observation units and how the data were collected.
+
+The observation units are individual adults who are 18+ and are from the United States. They are adults who responded to the 2024 GSC survey. This data was collected through address-based probability sampling. Most respondents completed this survey online, and the rest was in person or by phone. The question on if the person is confident in the scientific community was asked at random to two-thirds of the individuals. From 3986 respondents, that reduces the data to 2565 valid responses to answer our research question.
 
 #### 3 Outcomes, Exposures, and Additional Variables of Interest
 
@@ -72,20 +46,31 @@ Describe the observation units and how the data were collected.
 3.1 Primary Outcome(s)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|------------------|----------------------|--------------------------------|
+| consci | Confidence in the scientific community | Ordinal: 1 = a great deal, 2 = only some, 3 = hardly any |
 
 3.2 Primary Independent Variable(s)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|-----------------|-----------------|--------------------------------------|
+| degree | Highest degree completed | Ordinal: 0 = less than high school, 1 = high school, 2 = associate/junior college, 3 = bachelor’s, 4 = graduate |
+| partyid | Political party identification | Categorical: Democrat (0–2), Independent (3), Republican (4–6) other party |
 
 3.3 Additional Variables of Interest (including potential confounders)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|-----------------|-----------------|--------------------------------------|
+| age | Age of respondent | Continuous variable |
+| realinc | Family income (constant dollars) | Continuous |
+| childs | Number of children | Continuous (count), 0–8 (8 = eight or more) |
+| maeduc | Mother's highest year of school completed | Continuous, 0–20 years |
+| tvhours | Hours per day watching TV | Continuous, 0–24 hours |
+| sex | Sex of respondent | Binary: 1 = male, 2 = female |
+| race | Race of respondent | Categorical: 1 = white, 2 = Black, 3 = other |
+| region | Region of interview | Categorical: 1 = Northeast, 2 = Midwest, 3 = South, 4 = West |
+| attend | Religious service attendance | Ordinal: 0 = never through 8 = several times a week |
+| polviews | Political ideology (liberal to conservative) | Ordinal: 1 = extremely liberal through 7 = extremely conservative |
+| wrkstat | Labor force status | Categorical: 1 = full time, 2 = part time, 3 = temporarily not working, 4 = unemployed, 5 = retired, 6 = in school, 7 = keeping house, 8 = other |
 
 #### 4 Statistical Analysis Plan
 
@@ -95,7 +80,22 @@ Describe the observation units and how the data were collected.
 
 4.2 Statistical Model (write in mathematical notation and define each term)
 
+$$\begin{aligned}
+\text{logit}\big[P(\text{Confidence in Science} \le j)\big] = \beta_{0j} - \big(
+&\beta_1\,\text{Highest Degree} + \beta_2\,\text{Political Party} \\
+&+ \beta_3\,(\text{Highest Degree} \times \text{Political Party}) \\
+&+ \beta_4\,\text{Age} + \beta_5\,\text{Family Income} \\
+&+ \beta_6\,\text{Number of Children} + \beta_7\,\text{Mother's Years of Education} \\
+&+ \beta_8\,\text{Daily TV Hours} + \beta_9\,\text{Sex} + \beta_{10}\,\text{Race} \\
+&+ \beta_{11}\,\text{Region} + \beta_{12}\,\text{Religious Attendance} \\
+&+ \beta_{13}\,\text{Political Views} + \beta_{14}\,\text{Work Status}\big)
+\end{aligned}$$
+
 4.2 Rationale for the statistical model (why are you choosing to use this type of model? What about your data structure/characteristics are you accommodating with this model type?)
+
+We chose ordinal logistic regression because confidence in science has three ordered categories.
+
+Here, a linear regression model would not be able to classify the categories, and multinational regression would ignore the ordinal order of our prediction.
 
 4.3 Model Assumptions
 
@@ -106,6 +106,30 @@ Describe the observation units and how the data were collected.
 #### Exploratory Data Analysis
 
 *First, provide a snapshot of the data using the glimpse function or something similar. Then, present your EDA according to your SAP above. At minimum, you should present basic characteristics of your outcome alone (descriptive statistics and a plot) and at least one key relationship of interest, but the EDA should not exceed 3 pages. It may be useful to present a "Table 1" that gives descriptive statistics for several variables of interest. You are not required to complete data cleaning for the EDA.*
+
+```{r}
+# Initial data cleaning
+library(haven)
+library(dplyr)
+
+vars <- c("consci", "degree", "partyid", "sex", "race", "region", "attend", 
+          "polviews", "wrkstat",
+          "age", "realinc", "childs", "maeduc", "tvhours")
+
+gss_clean <- gss |>
+  select(any_of(vars)) |>
+  mutate(
+    across(c(consci, degree, partyid, sex, race, region, attend,
+             polviews, wrkstat), as_factor),                                  
+    across(c(age, realinc, childs, maeduc, tvhours),
+           ~ as.numeric(zap_labels(.x)))                                    
+  )
+```
+
+```{r}
+# Snapshot of data
+head(gss_clean)
+```
 
 ```{r}
 
