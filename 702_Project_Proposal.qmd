@@ -1,6 +1,6 @@
 ---
 title: "IDS 702 Project Proposal"
-author: "Agastya Vinchhi, Steven Xu, Zhuotong Xie, Gulnar Gasimzada"
+author: "Agastya Vinchhi, Steven Xu, Zhuotong Xie, Gulnar Gasimzade"
 format: pdf
 editor: visual
 execute:
@@ -37,7 +37,7 @@ Among adults surveyed in the 2024 General Social Survey (GSC), is more education
 
 Describe the observation units and how the data were collected.
 
-The observation units are individual adults who are 18+ and are from the United States. They are adults who responded to the 2024 GSC survey. This data was collected through address-based probability sampling. Most respondents completed this survey online, and the rest was in person or by phone. The question on if the person is confident in the scientific community was asked at random to two-thirds of the individuals. From 3986 respondents, that reduces the data to 2565 valid responses to answer our research question.
+The observation units are individual adults who are 18+ and are from the United States. They are adults who responded to the 2024 GSS survey. This data was collected through address-based probability sampling. Most respondents completed this survey online, and the rest was in person or by phone. The question on if the person is confident in the scientific community was asked at random to two-thirds of the individuals. From 3986 respondents, that reduces the data to 2565 valid responses to answer our research question.
 
 #### 3 Outcomes, Exposures, and Additional Variables of Interest
 
@@ -52,14 +52,14 @@ The observation units are individual adults who are 18+ and are from the United 
 3.2 Primary Independent Variable(s)
 
 | Variable Name | Description | Coding specification |
-|-----------------|-----------------|--------------------------------------|
+|------------------|------------------|-------------------------------------|
 | degree | Highest degree completed | Ordinal: 0 = less than high school, 1 = high school, 2 = associate/junior college, 3 = bachelor’s, 4 = graduate |
 | partyid | Political party identification | Categorical: Democrat (0–2), Independent (3), Republican (4–6) other party |
 
 3.3 Additional Variables of Interest (including potential confounders)
 
 | Variable Name | Description | Coding specification |
-|-----------------|-----------------|--------------------------------------|
+|------------------|------------------|-------------------------------------|
 | age | Age of respondent | Continuous variable |
 | realinc | Family income (constant dollars) | Continuous |
 | childs | Number of children | Continuous (count), 0–8 (8 = eight or more) |
@@ -78,6 +78,12 @@ The observation units are individual adults who are 18+ and are from the United 
 
 *Detail how you will investigate the data, including basic characteristics of the outcome and independent variable(s) of interest (e.g., "The outcome is continuous, so we will generate a histogram of the outcome. Then, we will generate a stacked histogram/scatter plot to explore the relationship between the outcome and the independent variable")*
 
+To evaluate our data prior to modeling, we tailor our exploratory visualizations to the categorical and ordered structure of our key variables. Our outcome, `consci` (confidence in science), is an ordinal categorical variable with three ranked tiers: "Hardly Any", "Only Some", and "A Great Deal". Because the outcome consists of discrete ordered categories rather than continuous values, standard histograms are not applicable; we will instead use a univariate bar chart to inspect the overall distribution of responses and identify any potential class imbalances.
+
+Our primary predictor, `degree` (education), is also an ordinal categorical variable ordered by academic achievement, while our key moderator, `partyid` (political affiliation), is a nominal categorical variable without an inherent hierarchy. Since scatter plots cause severe overplotting with discrete variables, we will construct a 100% stacked proportional bar chart to examine confidence levels across educational tiers. To explore our focal interaction hypothesis ($\text{Degree} \times \text{Party ID}$), we will facet these stacked bar charts across political affiliations, allowing us to visually compare whether the educational gradient in scientific trust differs between Democrats and Republicans.
+
+Lastly, for continuous and count covariates such as `age`, `realinc` (family income), and `childs`, we will calculate standard summary statistics (mean, standard deviation, median, IQR) and construct boxplots stratified by scientific confidence to screen for skewness and outliers. Additional demographic controls like `sex`, `race`, and `region` will be summarized using two-way frequency tables to assess the sample balance.
+
 4.2 Statistical Model (write in mathematical notation and define each term)
 
 $$\begin{aligned}
@@ -93,13 +99,33 @@ $$\begin{aligned}
 
 4.2 Rationale for the statistical model (why are you choosing to use this type of model? What about your data structure/characteristics are you accommodating with this model type?)
 
-We chose ordinal logistic regression because confidence in science has three ordered categories.
+We chose an ordinal logistic regression model (cumulative logit model) because our outcome, `consci` (confidence in science), is an ordinal categorical variable with three naturally ranked levels: "Hardly Any", "Only Some", and "A Great Deal".
 
-Here, a linear regression model would not be able to classify the categories, and multinational regression would ignore the ordinal order of our prediction.
+Linear regression would not work well here because it assumes our outcome is continuous with equal spacing between categories, while multinomial regression would completely ignore this natural order. This model lets us keep that hierarchy intact and gives us a clear, intuitive way to see if the link between education and trust in science changes depending on political party identification.
 
 4.3 Model Assumptions
 
+For our ordinal logistic regression model, we will rely on a few key assumptions:
+
+**Proportional odds (parallel slopes):** We assume that the effect of each predictor (such as education and party affiliation) is the same across each step of the confidence levels.
+
+**Independence of observations:** Each respondent’s answer is assumed to be independent of others, which aligns with how the GSS survey was designed and collected.
+
+**Linearity for continuous predictors:** For numeric variables like age and family income, we assume a linear relationship with the log-odds of the outcome.
+
+**No multicollinearity:** We assume our predictors and demographic control variables are not overly correlated with each other.
+
 4.4 Model Assessment (how will you assess the assumptions and model performance?)
+
+To check these assumptions and evaluate how well our model fits the data in our final report, we will take the following steps:
+
+**Evaluating the proportional odds assumption:** We will visually check the empirical log-odds across separate cutpoints to see if the slopes look roughly parallel, or compare our model fit with a less restrictive model.
+
+**Checking multicollinearity:** We will examine Variance Inflation Factors (VIF) for all variables, ensuring that adding the interaction term ($\text{Degree} \times \text{Party ID}$) doesn't introduce severe collinearity (keeping VIF values below 5).
+
+**Checking continuous variables:** We will plot residuals and look for non-linear patterns in age and income to make sure their linear form is appropriate.
+
+**Assessing overall model performance:** We will assess model fit using the Likelihood Ratio Test, compare nested model versions using AIC / BIC, and check predicted probabilities to see how accurately the model captures people's trust in science.
 
 \newpage
 
@@ -111,6 +137,9 @@ Here, a linear regression model would not be able to classify the categories, an
 # Initial data cleaning
 library(haven)
 library(dplyr)
+library(ggplot2)
+
+gss <- read_dta("GSS2024.dta")
 
 vars <- c("consci", "degree", "partyid", "sex", "race", "region", "attend", 
           "polviews", "wrkstat",
@@ -132,7 +161,54 @@ head(gss_clean)
 ```
 
 ```{r}
+# 1.Marginal distribution of the outcome variable (Confidence in Science)
+gss_clean |>
+  filter(consci %in% c("hardly any", "only some", "a great deal")) |>
+  mutate(consci = factor(consci, levels = c("hardly any", "only some", "a great deal"))) |>
+  ggplot(aes(x = consci)) +
+  geom_bar(fill = "#34495E", width = 0.55) +
+  theme_minimal(base_size = 11) +
+  labs(
+    title = "Figure 1: Distribution of Confidence in Science",
+    x = "Confidence Level",
+    y = "Count"
+  )
 
+# 2.Key relationship: Confidence across education levels by political affiliation
+valid_degrees <- c("less than high school", "high school", "associate/junior college", "bachelor's", "graduate")
+
+gss_clean |>
+  filter(
+    consci %in% c("hardly any", "only some", "a great deal"),
+    degree %in% valid_degrees
+  ) |>
+  mutate(
+    consci = factor(consci, levels = c("hardly any", "only some", "a great deal")),
+    degree = factor(degree, levels = valid_degrees),
+    party_group = case_when(
+      grepl("democrat", tolower(as.character(partyid))) ~ "Democrat",
+      grepl("republican", tolower(as.character(partyid))) ~ "Republican",
+      grepl("ind", tolower(as.character(partyid))) ~ "Independent",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  filter(!is.na(party_group)) |>
+  ggplot(aes(x = degree, fill = consci)) +
+  geom_bar(position = "fill", alpha = 0.85) +
+  facet_wrap(~ party_group) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues") +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom"
+  ) +
+  labs(
+    title = "Figure 2: Confidence in Science across Education by Political Party",
+    x = "Education Level",
+    y = "Percentage",
+    fill = "Confidence"
+  )
 ```
 
 \newpage
@@ -208,5 +284,13 @@ Describe the observation units and how the data were collected.
 ## Team Charter
 
 1.  When will you meet as a team to work on the project components? Will these meetings be held in person or virtually?
+
+    We will meet in person twice a week on our statistics class days, specifically Tuesdays and Thursdays at 11:00 AM. If necessary, virtual meetings via Zoom or Google Meet will be arranged to address quick questions or urgent deadlines.
+
 2.  What is your group policy on missing team meetings (e.g., how much advance notice should be provided)?
+
+    If a team member cannot attend an in-person meeting, they must give at least 1 hour's advance notice in our group channel. Whenever possible, members unable to attend in person are expected to join virtually.
+
 3.  How will your team communicate (email, Slack, text messages)? What is your policy on appropriate response time (within a certain number of hours? Nights/weekends?)?
+
+    Our primary communication channel is Slack. Team members are expected to respond within a few hours during the day, with regular communication taking place until 9:00 PM on weeknights. Urgent matters after 9:00 PM or during weekends can be addressed if agreed upon, but routine responses are generally expected by the following morning.
