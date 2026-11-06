@@ -46,20 +46,20 @@ The observation units are individual adults who are 18+ and are from the United 
 3.1 Primary Outcome(s)
 
 | Variable Name | Description | Coding specification |
-|------------------|----------------------|--------------------------------|
+|-------------------|----------------------|--------------------------------|
 | consci | Confidence in the scientific community | Ordinal: 1 = a great deal, 2 = only some, 3 = hardly any |
 
 3.2 Primary Independent Variable(s)
 
 | Variable Name | Description | Coding specification |
-|------------------|------------------|-------------------------------------|
+|-------------------|-------------------|------------------------------------|
 | degree | Highest degree completed | Ordinal: 0 = less than high school, 1 = high school, 2 = associate/junior college, 3 = bachelor’s, 4 = graduate |
 | partyid | Political party identification | Categorical: Democrat (0–2), Independent (3), Republican (4–6) other party |
 
 3.3 Additional Variables of Interest (including potential confounders)
 
 | Variable Name | Description | Coding specification |
-|------------------|------------------|-------------------------------------|
+|-------------------|-------------------|------------------------------------|
 | age | Age of respondent | Continuous variable |
 | realinc | Family income (constant dollars) | Continuous |
 | childs | Number of children | Continuous (count), 0–8 (8 = eight or more) |
@@ -78,11 +78,9 @@ The observation units are individual adults who are 18+ and are from the United 
 
 *Detail how you will investigate the data, including basic characteristics of the outcome and independent variable(s) of interest (e.g., "The outcome is continuous, so we will generate a histogram of the outcome. Then, we will generate a stacked histogram/scatter plot to explore the relationship between the outcome and the independent variable")*
 
-To evaluate our data prior to modeling, we tailor our exploratory visualizations to the categorical and ordered structure of our key variables. Our outcome, `consci` (confidence in science), is an ordinal categorical variable with three ranked tiers: "Hardly Any", "Only Some", and "A Great Deal". Because the outcome consists of discrete ordered categories rather than continuous values, standard histograms are not applicable; we will instead use a univariate bar chart to inspect the overall distribution of responses and identify any potential class imbalances.
+To evaluate our data, we will tailor our exploratory visualizations to the categorical structure of our variables. Our outcome, `consci` (confidence in science), is an ordinal categorical variable with three ranked tiers: "Hardly Any", "Only Some", and "A Great Deal". Because the outcome consists of discrete ordered categories we will use a bar chart to inspect the overall distribution of responses and identify any class imbalances.
 
-Our primary predictor, `degree` (education), is also an ordinal categorical variable ordered by academic achievement, while our key moderator, `partyid` (political affiliation), is a nominal categorical variable without an inherent hierarchy. Since scatter plots cause severe overplotting with discrete variables, we will construct a 100% stacked proportional bar chart to examine confidence levels across educational tiers. To explore our focal interaction hypothesis ($\text{Degree} \times \text{Party ID}$), we will facet these stacked bar charts across political affiliations, allowing us to visually compare whether the educational gradient in scientific trust differs between Democrats and Republicans.
-
-Lastly, for continuous and count covariates such as `age`, `realinc` (family income), and `childs`, we will calculate standard summary statistics (mean, standard deviation, median, IQR) and construct boxplots stratified by scientific confidence to screen for skewness and outliers. Additional demographic controls like `sex`, `race`, and `region` will be summarized using two-way frequency tables to assess the sample balance.
+For our important predictors for analysis, `degree` (education) and `partyid` (political affiliation), we will construct a stacked proportional bar chart to examine confidence levels across educational tiers. To explore our interaction term better ($\text{Degree} \times \text{Party ID}$), we will facet these bar charts across political affiliations, allowing us to visually compare whether scientific trust differs between Democrats and Republicans, organized by education.
 
 4.2 Statistical Model (write in mathematical notation and define each term)
 
@@ -99,9 +97,9 @@ $$\begin{aligned}
 
 4.2 Rationale for the statistical model (why are you choosing to use this type of model? What about your data structure/characteristics are you accommodating with this model type?)
 
-We chose an ordinal logistic regression model (cumulative logit model) because our outcome, `consci` (confidence in science), is an ordinal categorical variable with three naturally ranked levels: "Hardly Any", "Only Some", and "A Great Deal".
+We chose an ordinal logistic regression model because our outcome, `consci` (confidence in science), is an ordinal categorical variable with three ranked levels: "Hardly Any", "Only Some", and "A Great Deal".
 
-Linear regression would not work well here because it assumes our outcome is continuous with equal spacing between categories, while multinomial regression would completely ignore this natural order. This model lets us keep that hierarchy intact and gives us a clear, intuitive way to see if the link between education and trust in science changes depending on political party identification.
+Linear regression would not work well here because it assumes our outcome is continuous, while multinomial regression would ignore the order of the outcome.
 
 4.3 Model Assumptions
 
