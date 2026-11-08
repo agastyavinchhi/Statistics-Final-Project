@@ -209,19 +209,25 @@ gss_clean |>
   )
 ```
 
-\newpage
-
 ### Dataset Option 2
 
 ------------------------------------------------------------------------
 
 Project Title:
 
+The Association Between Weather Conditions and Forest Fire Burned Area: The Moderating Role of Relative Humidity
+
 Data citation (use APA formatting or something similar):
+
+Cortez, P., & Morais, A. (2007). *Forest Fires* \[Dataset\]. UCI Machine Learning Repository. <https://doi.org/10.24432/C5D88D>
 
 Original data collection date (when was the dataset published?):
 
+2000–2003 (collected); 2008 (published in the UCI Repository)
+
 Data pull date (when did you download the data you will use?):
+
+2026 /11/06
 
 ------------------------------------------------------------------------
 
@@ -229,55 +235,236 @@ Data pull date (when did you download the data you will use?):
 
 *Write the research question you are interested in investigating in your analysis. Consult [this helpful guide](https://writingcenter.gmu.edu/writing-resources/research-based-writing/how-to-write-a-research-question) for writing a good research question. Go beyond "is there a relationship between X and Y" to incorporate some statistical complexity, e.g., "is there a relationship between X and Y and does this relationship change over time?" You may also want to provide a second RQ as a backup and I can provide feedback on both options. Remember that you are required to use an inferential research question.*
 
+Does relative humidity moderate the association between temperature and forest fire burned area, after adjusting for wind speed and seasonal variation?
+
 #### 2 Study Population
 
 Describe the observation units and how the data were collected.
 
-#### 3 Outcomes, Exposures, and Additional Variables of Interest
+The dataset contains 517 forest fire records collected from Montesinho Natural Park in northeastern Portugal between 2000 and 2003. Each observation represents a recorded forest fire and includes information on burned area, meteorological conditions, fire weather indices, and spatial and temporal characteristics.
 
-*Add rows as necessary. Use the data dictionary for the coding specifications, e.g., 1=Diagnosed with CHD, 0=No diagnosis*
+The data were obtained from the UCI Machine Learning Repository and were originally compiled by Cortez and Morais (2007). As this is an observational dataset, the analysis will focus on statistical associations rather than causal relationships. The findings may not generalize to forest fires in other geographical regions or time periods.
+
+#### 3 Outcomes, Exposures, and Additional Variables of Interest
 
 3.1 Primary Outcome(s)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|------------------------|------------------------|------------------------|
+| area | Forest area burned by each recorded fire | Continuous, measured in hectares (ha), ranging from 0 to 1090.84 |
+| log_area | Log-transformed burned area, used as the regression response | Continuous, calculated as log(area + 1) |
 
 3.2 Primary Independent Variable(s)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|------------------------|------------------------|------------------------|
+| temp | Ambient temperature | Continuous, measured in degrees Celsius (°C) |
+| RH | Relative humidity | Continuous, measured as a percentage (%) |
+
+An interaction term between temperature and relative humidity will be included to investigate whether the association between temperature and burned area varies across different humidity levels.
 
 3.3 Additional Variables of Interest (including potential confounders)
 
 | Variable Name | Description | Coding specification |
-|---------------|-------------|----------------------|
-|               |             |                      |
+|------------------------|------------------------|------------------------|
+| wind | Wind speed | Continuous, measured in km/h |
+| month | Month in which the fire was recorded | Categorical, Jan–Dec |
+| season | Season in which the fire was recorded | Categorical, derived from month: Winter (Dec–Feb), Spring (Mar–May), Summer (Jun–Aug), Fall (Sep–Nov) |
 
 #### 4 Statistical Analysis Plan
 
 4.1 Exploratory Data Analysis
 
-*Detail how you will investigate the data, including basic characteristics of the outcome and independent variable(s) of interest (e.g., "The outcome is continuous, so we will generate a histogram of the outcome. Then, we will generate a stacked histogram/scatter plot to explore the relationship between the outcome and the independent variable")*
+We will begin by examining the structure of the dataset and calculating descriptive statistics, including the mean, median, standard deviation, and range for burned area, temperature, relative humidity, and wind speed. We will also examine the number of observations across different seasons.
+
+Next, we will visualize the distribution of burned area using histograms to identify skewness, zero values, and potential outliers. Since burned area is highly right-skewed, we will also examine the distribution after applying a log(area + 1) transformation.
+
+To explore the potential interaction between temperature and relative humidity, we will create a scatter plot of temperature against log-transformed burned area, with observations grouped into higher and lower humidity levels based on the median relative humidity. We will add separate fitted regression lines for each group to visually examine whether the relationship between temperature and burned area differs across humidity levels.
 
 4.2 Statistical Model (write in mathematical notation and define each term)
 
+We plan to use multiple linear regression with an interaction term to examine whether relative humidity moderates the association between temperature and forest fire burned area. Because burned area is highly right-skewed, the response variable will be transformed using log(area + 1).
+
+Temperature and relative humidity will be mean-centered to improve the interpretation of the regression coefficients. Wind speed and season will be included as additional covariates, with winter serving as the reference category.
+
+The proposed model is:
+
+$$\begin{aligned}
+\log(1+\text{area}_i)
+&= \beta_0 + \beta_1 T_i + \beta_2 H_i \\
+&\quad + \beta_3(T_i H_i) + \beta_4 W_i \\
+&\quad + \gamma_1 S_{1i} + \gamma_2 S_{2i} \\
+&\quad + \gamma_3 S_{3i} + \epsilon_i
+\end{aligned}$$
+
+where:
+
+- $T_i$ is the mean-centered temperature.
+- $H_i$ is the mean-centered relative humidity.
+- $T_iH_i$ is the interaction between temperature and relative humidity.
+- $W_i$ represents wind speed.
+- $S_{1i}$, $S_{2i}$, and $S_{3i}$ are indicators for spring, summer, and fall, respectively, with winter as the reference category.
+- $\epsilon_i$ is the error term.
+
+The primary parameter of interest is $\beta_3$, which measures how the association between temperature and log-transformed burned area changes with relative humidity.
+
 4.2 Rationale for the statistical model (why are you choosing to use this type of model? What about your data structure/characteristics are you accommodating with this model type?)
+
+Multiple linear regression is appropriate for this analysis because our response variable, log-transformed burned area, is continuous, and we aim to examine its association with several explanatory variables simultaneously.
+
+We will include an interaction term between temperature and relative humidity to investigate whether the association between temperature and burned area varies across different humidity levels. Wind speed and season will be included as additional covariates to account for differences in weather conditions and seasonal patterns.
+
+Since the original burned area variable is highly right-skewed and contains extreme values, we will apply a log(area + 1) transformation to reduce the influence of extreme observations. However, the substantial number of zero values may still present challenges for linear regression. We will therefore evaluate the model assumptions and assess whether the proposed model is appropriate for the data.
 
 4.3 Model Assumptions
 
+Our multiple linear regression model relies on the following assumptions:
+
+1.  **Linearity:** The expected log-transformed burned area is a linear function of the specified predictors and their interaction term.
+
+2.  **Independence:** Observations and their error terms are assumed to be independent.
+
+3.  **Homoscedasticity:** The variance of the error terms is assumed to be constant across different predictor values.
+
+4.  **Normality of Errors:** The error terms are assumed to be approximately normally distributed for conventional statistical inference.
+
+5.  **No Perfect Multicollinearity:** The predictors should not exhibit perfect linear relationships with one another.
+
+We also assume that the proposed model is reasonably specified and that extreme observations do not unduly determine the estimated relationships.
+
 4.4 Model Assessment (how will you assess the assumptions and model performance?)
+
+We will evaluate the regression model using diagnostic plots and statistical measures. Residuals versus fitted values plots will be used to assess the linearity assumption and identify potential heteroscedasticity, while Q-Q plots will be used to examine the normality of residuals. Variance inflation factors (VIF) will be calculated to assess multicollinearity among predictors.
+
+We will also examine leverage and Cook's distance to identify potentially influential observations, particularly those associated with extremely large burned areas. We will consider possible temporal and spatial dependence among observations, although the available data may limit a formal assessment of independence.
+
+Model fit will be evaluated using R-squared and adjusted R-squared. Our primary statistical inference will focus on the temperature–humidity interaction coefficient, using its estimated value, 95% confidence interval, and p-value to assess whether the association between temperature and burned area varies across humidity levels.
+
+If substantial heteroscedasticity or influential observations are detected, we will consider robust standard errors and sensitivity analyses to evaluate the stability of our findings.
 
 \newpage
 
 #### Exploratory Data Analysis
 
-*First, provide a snapshot of the data using the glimpse function or something similar. Then, present your EDA according to your SAP above. At minimum, you should present basic characteristics of your outcome alone (descriptive statistics and a plot) and at least one key relationship of interest, but the EDA should not exceed 3 pages. It may be useful to present a "Table 1" that gives descriptive statistics for several variables of interest. You are not required to complete data cleaning for the EDA.*
+```{r}
+library(tidyverse)
+
+fires <- read_csv(
+  "forestfires.csv",
+  show_col_types = FALSE
+)
+
+glimpse(fires)
+```
 
 ```{r}
-
+fires |>
+  summarise(
+    n = n(),
+    mean_area = mean(area),
+    median_area = median(area),
+    sd_area = sd(area),
+    min_area = min(area),
+    max_area = max(area),
+    zero_count = sum(area == 0),
+    zero_pct = mean(area == 0) * 100
+  )
 ```
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+#| layout-ncol: 2
+#| fig-width: 5
+#| fig-height: 3.5
+
+# Create log-transformed response
+fires <- fires |>
+  mutate(log_area = log1p(area))
+
+# Original burned area
+ggplot(fires, aes(x = area)) +
+  geom_histogram(bins = 30, fill = "steelblue",
+                 color = "white") +
+  labs(
+    title = "Original Burned Area",
+    x = "Burned Area (ha)",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11))
+
+# Log-transformed burned area
+ggplot(fires, aes(x = log_area)) +
+  geom_histogram(bins = 30, fill = "steelblue",
+                 color = "white") +
+  labs(
+    title = "Log-Transformed Burned Area",
+    x = "log(1 + Area)",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11))
+```
+
+The distribution of burned area is highly right-skewed, with most observations concentrated near zero and a small number of extremely large values. After applying a log(area + 1) transformation, the extreme values become less dominant, making the distribution easier to examine. However, a substantial concentration at zero remains, suggesting that the transformed response may still present challenges for linear regression.
+
+```{r}
+fires <- fires |>
+  mutate(
+    humidity_group = if_else(
+      RH <= median(RH),
+      "Lower Humidity",
+      "Higher Humidity"
+    )
+  )
+
+ggplot(
+  fires,
+  aes(
+    x = temp,
+    y = log_area,
+    color = humidity_group
+  )
+) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(
+    method = "lm",
+    se = TRUE
+  ) +
+  labs(
+    title = "Temperature and Burned Area by Humidity Level",
+    x = "Temperature (°C)",
+    y = "log(1 + Burned Area)",
+    color = "Humidity Level"
+  ) +
+  theme_minimal()
+```
+
+The scatter plot suggests a weak positive association between temperature and log-transformed burned area. When observations are divided into higher and lower humidity groups, the fitted regression lines show only small differences in slope, providing limited visual evidence of a temperature–humidity interaction. However, substantial variation in burned area remains at similar temperature levels, and many observations have zero recorded burned area. A formal regression analysis with continuous humidity and additional covariates will be needed to evaluate the interaction effect.
+
+```{r}
+fires <- fires |>
+  mutate(
+    season = case_when(
+      month %in% c("dec", "jan", "feb") ~ "Winter",
+      month %in% c("mar", "apr", "may") ~ "Spring",
+      month %in% c("jun", "jul", "aug") ~ "Summer",
+      month %in% c("sep", "oct", "nov") ~ "Fall"
+    ),
+    season = factor(
+      season,
+      levels = c("Winter", "Spring", "Summer", "Fall")
+    )
+  )
+
+fires |>
+  count(season) |>
+  mutate(percent = round(n / sum(n) * 100, 1))
+```
+
+Forest fire observations are unevenly distributed across seasons, with most records occurring in summer (45.1%) and fall (36.4%). Winter accounts for only 6.0% of the observations. This seasonal imbalance suggests that fire activity varies considerably across the year and supports including season as an additional covariate in the regression model. However, the smaller number of winter observations may result in less precise estimates for seasonal comparisons.
 
 ## Team Charter
 
